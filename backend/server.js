@@ -75,7 +75,7 @@ app.use(session({
   }),
   secret: process.env.SESSION_SECRET || 'une-cle-secrete-a-changer',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     secure: false,        // true uniquement derrière HTTPS
     httpOnly: true,
