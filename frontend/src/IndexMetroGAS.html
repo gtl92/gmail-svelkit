@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Résumé Gmail Pro</title>
+  <link href="https://cdn.metroui.org.ua/v4/css/metro-all.min.css" rel="stylesheet">
+  <link href="https://cdn.metroui.org.ua/4.5.12/icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(120deg, #f3f3f3 0%, #e8edf5 100%);
+    }
+    .metro-container {
+      max-width: 880px;
+      min-width: 320px;
+      margin: 56px auto 0 auto;
+      padding: 56px 54px 34px 54px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 28px #0002;
+      transition: max-width 0.25s, padding 0.25s;
+    }
+    @media (max-width: 1100px) {
+      .metro-container {
+        max-width: 97vw;
+        padding: 38px 14px 24px 14px;
+      }
+    }
+ @media (max-width: 700px) {
+  .metro-container {
+    max-width: 100vw;
+    width: 100vw;
+    min-width: 0;
+    padding: 8vw 2vw 4vw 2vw;    /* Réduit le padding sur mobile */
+    border-radius: 0;
+    box-shadow: 0 3px 14px #0001;
+    margin: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+   html, body {
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+  }
+    table {
+    width: 100%;
+    table-layout: fixed;
+    word-break: break-word;
+  }
+  th, td {
+    word-break: break-word;
+    min-width: 0;
+    font-size: 15px;
+  }
+  input[type="date"], input[type="email"] {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .container-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+    @media (orientation: landscape) and (max-width: 932px) {
+      .metro-container {
+        width: 96vw !important;
+        min-height: 80vh !important;
+        max-width: 800px;
+        margin: 4vh auto 0 auto !important;
+        padding: 14px 2vw !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 24px #0002 !important;
+      }
+      @media (max-width: 950px) and (orientation: landscape) {
+        .metro-container {
+          max-height: 90vh;
+          height: 90vh;
+          overflow-y: auto;
+          margin: 0 auto;
+          padding-top: 12px;
+          padding-bottom: 12px;
+          border-radius: 10px;
+        }
+        html, body {
+          height: 100vh;
+          overflow: hidden;
+          background: #f3f3f3;
+        }
+      }
+      body {
+        overflow: hidden;
+        background: #f3f3f3;
+      }
+    }
+    #user-banner-sticky { display: none !important; }
+    .fg-green { color: #27ae60 !important; }
+    #btn-send-email {
+      border-color: #1976d2 !important;
+      color: #1976d2 !important;
+      background: #fff !important;
+      transition: background 0.2s, color 0.2s;
+    }
+    #btn-send-email:hover:not(:disabled),
+    #btn-send-email:focus:not(:disabled) {
+      background: #1976d2 !important;
+      color: #fff !important;
+      border-color: #1565c0 !important;
+    }
+    #btn-send-email:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #btn-send-email:hover:not(:disabled) .mif-outgoing_mail {
+      color: #fff !important;
+    }
+    .switch .check {
+      background: #ececec;
+      border-radius: 50px;
+      transition: background 0.25s;
+      border: 1px solid #e1e1e1;
+    }
+    .switch input[type="checkbox"]:checked + .check {
+      background: #27ae60 !important;
+      border-color: #27ae60 !important;
+      box-shadow: 0 0 0 2px #27ae6011;
+    }
+    .switch input[type="checkbox"]:not(:checked) + .check {
+      background: #c0392b !important;
+      border-color: #c0392b !important;
+      box-shadow: 0 0 0 2px #c0392b11;
+    }
+    .switch .check::after {
+      background: #fff !important;
+      border-color: #c0392b !important;
+      transition: background 0.15s, border-color 0.18s;
+    }
+    .switch input[type="checkbox"]:checked + .check::after {
+      border-color: #27ae60 !important;
+    }
+    .switch .check, .switch .check::after {
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .fade-in { animation: fadeIn 0.4s; }
+    .fade-out { animation: fadeOut 0.4s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    .mt-2 { margin-top: 2em; }
+    .center { text-align: center; }
+    .metro-btn, button, .switch .caption { font-size: 1.17em !important; }
+    .status-msg { font-size: 1.05em !important; }
+    #portrait-warning button {
+      margin-top: 10px;
+      padding: 7px 20px;
+      border-radius: 8px;
+      background: #ffd700;
+      border: none;
+      color: #444;
+      font-size: 1em;
+      font-weight: 500;
+      box-shadow: 0 2px 8px #0001;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #portrait-warning button:hover {
+      background: #ffe580;
+    }
+  </style>
+  <style>
+    <?!= include('Style'); ?>
+  </style>
+</head>
+
+<body>
+  <!-- Bandeau d’avertissement portrait mobile -->
+  <div id="portrait-warning"
+    style="display:none;position:fixed;top:0;left:0;width:100vw;z-index:9999;
+    background:#fff3cd;border-bottom:1px solid #ffd700;color:#e67e22;
+    font-size:1.08em;text-align:center;padding:7px 2vw;">
+    <span style="font-size:1.5em;vertical-align:middle;">🔄</span>
+    Tournez votre appareil pour un affichage optimal (paysage conseillé).
+    <br>
+    <button id="btn-stay-portrait"
+        style="margin-top:10px;padding:7px 20px;border-radius:8px;
+                background:#ffd700;border:none;color:#444;font-size:1em;
+                font-weight:500;box-shadow:0 2px 8px #0001;cursor:pointer;">
+      Rester en mode portrait
+    </button>
+  </div>
+
+  <div id="userCharms" data-role="charms" data-position="right" data-width="350" data-overlay="true"
+    data-close-button="true" class="fg-dark" style="z-index:1300;">
+    <div style="padding:24px 18px;">
+      <button class="button mini cycle bg-light fg-dark" onclick="Metro.charms.close('#userCharms')"
+        style="position:absolute;top:10px;right:10px;z-index:1201;" aria-label="Fermer">
+        <span class="mif-cross"></span>
+      </button>
+      <div class="mb-2" style="display:flex;align-items:center;gap:14px;">
+        <span class="mif-user" style="font-size:2em;color:#1a73e8;"></span>
+        <div>
+          <span class="text-leader" style="font-size:1.07em;"><b>Compte Gmail :</b></span>
+          <div id="userCharmsEmail" style="font-weight:bold;color:#137ee3;font-size:1.05em;">…</div>
+        </div>
+      </div>
+      <hr>
+      <div style="font-size:1em;line-height:1.7;">
+        <span style="color:#1a73e8;"><b>Ce rapport sera généré pour ce compte Gmail.</b></span>
+        <div class="mt-1" style="font-size:0.98em;">
+          <span class="mif-warning fg-red"></span>
+          <span class="fg-red"><b>Attention :</b> Si plusieurs comptes Google sont ouverts dans ce navigateur,<br>
+            l’appli fonctionne uniquement pour le <b>compte “par défaut” Google</b>.<br>
+            <u>Fermez les autres comptes ou utilisez une fenêtre privée</u> pour éviter toute confusion.</span>
+        </div>
+      </div>
+      <hr>
+      <div style="color:#aaa; font-size:0.96em;">
+        <span class="mif-info fg-cyan"></span> Version app: <b>2025-07-22</b><br>
+        <a href="mailto:support@monprojet.com" class="button outline primary" style="margin-top:8px;">
+          <span class="mif-mail"></span> Support
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="metro-container">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+      <button class="button bg-indigo fg-white cycle"
+        style="box-shadow:0 1px 3px #0001;"
+        title="Infos utilisateur"
+        onclick="Metro.charms.open('#userCharms')">
+        <span class="mif-help1 mif-lg"></span>
+      </button>
+      <div style="flex: 1; text-align: center;">
+        <span class="fg-cyan" style="font-size: 1.6em; font-weight: 600;">Résumé Gmail</span>
+        <span class="icon mif-mail fg-cyan"></span>
+      </div>
+      <div style="width:36px;"></div>
+    </div>
+    <div id="mainEmail" style="text-align:center;font-size:1.07em;margin-bottom:18px;">
+      <div style="color:#d32f2f;font-size:0.98em;margin-top:10px;">
+        ⚠️ Le rapport porte sur la boîte Gmail du compte connecté ici:
+        <div><span class="1mif-mail fg-cobalt1"></span><span id="mainUserEmail" style="color:#1a73e8;font-weight:bold"></span></div>
+      </div>
+    </div>
+    <form id="rapportForm" onsubmit="event.preventDefault();generate();">
+      <div class="form-group">
+        <label>Date à analyser</label>
+        <input id="date" type="date" max="" style="width: 200px;" data-role="input">
+        <span id="nb-mails" style="margin-left:8px;font-size:0.97em;color:#555;"></span>
+      </div>
+      <div class="container-fluid p-5 border border-4 bd-grayWhite mt-3 mb-3 d-none d-block-md">
+        <h4 style="margin-bottom: 0px;">Rapport</h4>
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;gap:20px;margin-top:0px;">
+            <div style="width:50%;text-align:left;">
+              <label class="switch">
+                <input type="checkbox" id="onlyUnread" data-role="switch" checked>
+                <span class="caption" id="caption-onlyUnread" style="display:block;"></span>
+              </label>
+            </div>
+            <div style="width:50%;text-align:left;">
+              <label class="switch">
+                <input type="checkbox" id="groupByLabel" data-role="switch" checked>
+                <span class="caption" id="caption-groupByLabel" style="display:block;"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <button id="btn-generate" class="button success metro-btn mt-2" type="submit" disabled>
+          <span class="mif-rocket"></span> Générer le rapport
+        </button>
+        <button id="btn-send-email"
+          class="button primary1 outline square metro-btn mt-2"
+          type="button"
+          title="Envoyer le rapport par email"
+          disabled>
+          <span class="mif-outgoing_mail fg-cobalt"></span>
+        </button>
+        <span id="mailCount" style="margin-left:1em;"></span>
+        <span id="status" class="status-msg"></span>
+      </div>
+    </form>
+    <div id="emailDialog" data-role="dialog" data-close-button="true" data-overlay="true" data-width="400">
+      <div class="dialog-title">Envoyer le rapport par email</div>
+      <div class="dialog-content">
+        <label for="emailInput">Adresse email destinataire</label>
+        <input id="emailInput" type="email" class="input" style="width:96%" required>
+        <span id="emailSendStatus" style="font-size:0.95em;"></span>
+      </div>
+      <div class="dialog-actions">
+        <button class="button success" id="dialogSendBtn">Envoyer</button>
+        <button class="button" onclick="Metro.dialog.close('#emailDialog')">Annuler</button>
+      </div>
+    </div>
+<!-- ... tes styles et ton code d'avant inchangés ... -->
+
+<div class="container-fluid p-5 border border-4 bd-grayWhite mt-3 mb-3 d-none d-block-md">
+  <div class="mt-2">
+    <h4 style="margin-bottom: 0px;">Automatisation</h4>
+    <span id="automationStatusLabel" style="font-size:0.95em;margin-left:10px;color:#1a73e8;"></span>
+    <div class="form-group">
+      <select id="freq" data-role="select" onchange="toggleXhoursXminutes()">
+        <option value="">Aucune</option>
+        <option value="daily">1 fois par jour (7h00)</option>
+        <option value="xhours">Toutes les X heures</option>
+        <option value="xminutes">Toutes les X minutes (TEST)</option>
+      </select>
+      <!-- X MINUTES -->
+      <select id="xminutes" style="width:90px;display:none;margin-left:10px;" class="input">
+        <option value="1">1 minute</option>
+        <option value="5">5 min</option>
+        <option value="10">10 min</option>
+        <option value="15">15 min</option>
+        <option value="30">30 min</option>
+      </select>
+      <!-- X HEURES -->
+      <select id="xhours" style="width:90px;display:none;margin-left:10px;" class="input">
+        <option value="1">1h</option>
+        <option value="2">2h</option>
+        <option value="3">3h</option>
+        <option value="4">4h</option>
+        <option value="5">5h</option>
+        <option value="6">6h</option>
+        <option value="7">7h</option>
+        <option value="8">8h</option>
+        <option value="9">9h</option>
+        <option value="10">10h</option>
+        <option value="11">11h</option>
+        <option value="12">12h</option>
+      </select>
+      <button class="button warning metro-btn" onclick="setAutomation()">
+        <span class="mif-calendar"></span> Programmer
+      </button>
+    </div>
+    <span id="autoStatus" class="status-msg"></span>
+  </div>
+</div>
+    <div class="mt-2 center">
+      <button class="button secondary metro-btn" data-role="ripple"
+        onclick="window.open('https://script.google.com/macros/s/AKfycbxYlKuXG0VrfW3u-_FitrOHzb9vxodnKEM7_uqORnpI2cDkj0x5eQOjBwudNNsWZZka/exec?action=showLastReport','_blank');">
+        <span class="mif-file-text"></span> Voir le dernier rapport généré
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.metroui.org.ua/v4/js/metro.min.js"></script>
+  <script>
+    // --------- Bandeau non bloquant portrait mobile -----------
+    function isMobile() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+    let hidePortraitWarning = false;
+    function checkOrientationWarning() {
+      const warning = document.getElementById('portrait-warning');
+      if (hidePortraitWarning) {
+        warning.style.display = 'none';
+        return;
+      }
+      if (isMobile() && window.innerHeight > window.innerWidth) {
+        warning.style.display = 'block';
+      } else {
+        warning.style.display = 'none';
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      const btn = document.getElementById('btn-stay-portrait');
+      if (btn) {
+        btn.onclick = function() {
+          hidePortraitWarning = true;
+          document.getElementById('portrait-warning').style.display = 'none';
+        };
+      }
+      checkOrientationWarning();
+    });
+    window.addEventListener('resize', function() {
+      hidePortraitWarning = false;
+      checkOrientationWarning();
+    });
+
+    // --------- Metro UI, app logic ----------
+    const btnSendEmail = document.getElementById('btn-send-email');
+    window.addEventListener("beforeunload", function() {
+      google.script.run.clearLastHtmlReport();
+    });
+    google.script.run.withSuccessHandler(function (email) {
+      document.getElementById('userCharmsEmail').textContent = email;
+    }).getActiveUserEmail();
+
+    function generate() {
+      var btn = document.getElementById('btn-generate');
+      var btnSendEmail = document.getElementById('btn-send-email');
+      btn.disabled = true;
+      document.getElementById('status').innerHTML = `
+        <div style="background:#e8fff2; padding:10px;">
+          <div style="display:flex; align-items:center; min-height:36px;">
+            <span style="color:green;font-size:1.13em; margin-right:16px;">Génération...</span>
+            <div data-role="activity" data-type="metro" data-style="color" style="align-self:center;margin-top:2px;">
+            </div>
+          </div>
+        </div>
+      `;
+      if(window.Metro && Metro.activity && Metro.activity.init)  Metro.activity.init();
+      var onlyUnread = document.getElementById('onlyUnread').checked ? true : false;
+      var groupByLabel = document.getElementById('groupByLabel').checked ? true : false;
+      var date = document.getElementById('date').value;
+      google.script.run
+        .withSuccessHandler(function(msg) {
+          document.getElementById('status').innerHTML = `
+            <div class="row" style="justify-content:center;background: #e8fff2;">
+              <div class="cell-md-11 cell-12 p-2" style="background: #e8fff2; border-radius: 10px; box-shadow: 0 2px 6px #0001; color: #249656; font-weight: 600; text-align: center; font-size: 1.08em;">
+                <span class="mif-checkmark fg-green" style="font-size:1.4em;vertical-align:middle;margin-right:8px;"></span>
+                ${msg}
+              </div>
+            </div>
+          `;
+          btnSendEmail.disabled = false;
+          btn.disabled = false;
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('status').innerHTML = `
+            <div class="row" style="justify-content:center; background: #ffeaea;">
+              <div class="cell-md-11 cell-12 p-2" style="background: #ffeaea; border-radius: 10px; box-shadow: 0 2px 6px #0001; color: #c0392b; font-weight: 600; text-align: center; font-size: 1.08em;">
+                <span class="mif-cross fg-red" style="font-size:1.3em;vertical-align:middle;margin-right:8px;"></span>
+                Erreur : ${err.message}
+              </div>
+            </div>
+          `;
+          btn.disabled = false;
+        })
+        .generateReportUI(date, onlyUnread, groupByLabel);
+    }
+
+    function updateMailCount() {
+      var date = document.getElementById('date').value;
+      var btn = document.getElementById('btn-generate');
+      var btnSendEmail = document.getElementById('btn-send-email');
+      var mailCountSpan = document.getElementById('mailCount');
+      btn.disabled = true;
+      btnSendEmail.disabled = true;
+      mailCountSpan.innerHTML = `
+        <span class="count-loader" style="display:inline-flex;align-items:center;gap:10px;">
+          <span>Comptage...</span>
+          <div data-role="activity" data-type="square" data-style="color" style="width:36px;height:36px;"></div>
+        </span>
+      `;
+      if (!date) {
+        mailCountSpan.innerHTML = "";
+        btn.disabled = true;
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (count) {
+          let label = count === 0
+            ? `<span class='fg-red'>Aucun mail trouvé</span>`
+            : `<span class='fg-cyan'>${Math.min(count, 50)} mails récupérables / ${count} trouvés </span>`;
+          var loader = mailCountSpan.querySelector('.count-loader');
+          if (loader) {
+            loader.classList.add('fade-out');
+            setTimeout(function () {
+              mailCountSpan.innerHTML = `
+                <span class="fade-in" style="display:inline-flex;align-items:center;gap:10px;">
+                  ${label}
+                </span>
+              `;
+              btn.disabled = (count === 0);
+              btnSendEmail.disabled = (count === 0);
+            }, 400);
+          } else {
+            mailCountSpan.innerHTML = `
+              <span class="fade-in" style="display:inline-flex;align-items:center;gap:10px;">
+                ${label}
+              </span>
+            `;
+            btn.disabled = (count === 0);
+            btnSendEmail.disabled = (count === 0);
+          }
+        })
+        .withFailureHandler(function () {
+          var loader = mailCountSpan.querySelector('.count-loader');
+          if (loader) {
+            loader.classList.add('fade-out');
+            setTimeout(function () {
+              mailCountSpan.innerHTML = "<span class='fade-in fg-red'>Erreur de comptage</span>";
+              btn.disabled = true;
+              btnSendEmail.disabled = true;
+            }, 400);
+          } else {
+            mailCountSpan.innerHTML = "<span class='fade-in fg-red'>Erreur de comptage</span>";
+            btn.disabled = true;
+            btnSendEmail.disabled = true;
+          }
+        })
+        .countEmailsSince(date);
+    }
+
+    google.script.run.withSuccessHandler(function(email){
+      var emailAff = email ? email : "Non connecté / email non détecté";
+      document.getElementById('mainUserEmail').textContent = emailAff;
+      document.getElementById('userCharmsEmail').textContent = emailAff;
+    }).getActiveUserEmail();
+
+    document.getElementById('date').addEventListener('change', function () {
+      btnSendEmail.disabled = true;
+      var d = this.value;
+      var nbSpan = document.getElementById('nb-mails');
+      if (!d) {
+        nbSpan.textContent = '';
+        return;
+      }
+      nbSpan.innerHTML = "<span class='progress mini'></span>Recherche…";
+      google.script.run.withSuccessHandler(function (n) {
+        nbSpan.innerHTML = n ? `${n} mails récupérables` : 'Aucun mail.';
+      }).countEmailsSince(d);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var today = new Date().toISOString().split('T')[0];
+      document.getElementById('date').setAttribute('max', today);
+      document.getElementById('date').value = today;
+      toggleXhours();
+      updateMailCount();
+      document.getElementById('date').addEventListener('change', updateMailCount);
+      updateAutomationStatus();
+    });
+
+    function updateMetroUICaptions() {
+      var cb1 = document.getElementById('onlyUnread');
+      var caption1 = document.getElementById('caption-onlyUnread');
+      if (cb1.checked) {
+        caption1.textContent = 'mails: que les non lus';
+        caption1.style.color = '#27ae60';
+      } else {
+        caption1.textContent = 'mails: lus et non lus';
+        caption1.style.color = '#c0392b';
+      }
+      var cb2 = document.getElementById('groupByLabel');
+      var caption2 = document.getElementById('caption-groupByLabel');
+      if (cb2.checked) {
+        caption2.textContent = 'groupé par label';
+        caption2.style.color = '#27ae60';
+      } else {
+        caption2.textContent = 'non groupé par label';
+        caption2.style.color = '#c0392b';
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function(){
+      updateMetroUICaptions();
+      document.getElementById('onlyUnread').addEventListener('change', updateMetroUICaptions);
+      document.getElementById('groupByLabel').addEventListener('change', updateMetroUICaptions);
+    });
+
+    btnSendEmail.onclick = function() {
+      google.script.run.withSuccessHandler(function(email){
+        document.getElementById('emailInput').value = email || '';
+        document.getElementById('emailSendStatus').textContent = !email
+          ? "Impossible de récupérer votre email Google. Veuillez le saisir ci-dessous."
+          : '';
+        Metro.dialog.open('#emailDialog');
+      }).getActiveUserEmail();
+    };
+
+    document.getElementById('dialogSendBtn').onclick = function() {
+      var dest = document.getElementById('emailInput').value.trim();
+      if (!dest || !/^[^@]+@[^@]+\.[^@]+$/.test(dest)) {
+        document.getElementById('emailSendStatus').textContent = "Adresse invalide.";
+        return;
+      }
+      document.getElementById('emailSendStatus').innerHTML = "<span class='progress mini'></span>Envoi...";
+      google.script.run.withSuccessHandler(function(msg){
+        document.getElementById('emailSendStatus').innerHTML = "<span class='fg-green'>"+msg+"</span>";
+        setTimeout(()=>Metro.dialog.close('#emailDialog'), 1400);
+      }).withFailureHandler(function(err){
+        document.getElementById('emailSendStatus').innerHTML = "<span class='fg-red'>Erreur: "+err.message+"</span>";
+      }).sendLastReportByEmail(dest);
+    };
+
+function setAutomation() {
+    var freq = document.getElementById('freq').value;
+    var xh = document.getElementById('xhours').value;
+    var xm = document.getElementById('xminutes').value;
+    document.getElementById('autoStatus').innerHTML = "<span class='progress small'></span>";
+    google.script.run.withSuccessHandler(function (msg) {
+        document.getElementById('autoStatus').innerHTML = "<span class='fg-green'>" + msg + "</span>";
+        updateAutomationStatus();
+    }).withFailureHandler(function (err) {
+        document.getElementById('autoStatus').innerHTML = "<span class='fg-red'>Erreur : " + err.message + "</span>";
+    }).setAutomationUI(freq, xh, xm);
+}
+
+    function fillXhours() {
+      var xh = document.getElementById('xhours');
+      xh.innerHTML = '';
+      for (let i = 1; i <= 12; i++) {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i + ' h';
+        xh.appendChild(opt);
+      }
+    }
+
+ function toggleXhoursXminutes() {
+    var freq = document.getElementById('freq').value;
+    var xh = document.getElementById('xhours');
+    var xm = document.getElementById('xminutes');
+    xh.style.display = 'none';
+    xm.style.display = 'none';
+    if (freq === 'xhours') xh.style.display = 'inline-block';
+    if (freq === 'xminutes') xm.style.display = 'inline-block';
+}
+
+    function toggleXhours() {
+      var freq = document.getElementById('freq').value;
+      var xh = document.getElementById('xhours');
+      if (freq === 'xhours') {
+        xh.style.display = 'inline-block';
+        xh.required = true;
+        fillXhours();
+      } else {
+        xh.style.display = 'none';
+        xh.value = '';
+        xh.required = false;
+      }
+    }
+    function updateAutomationStatus() {
+      google.script.run.withSuccessHandler(function(status){
+        var label = document.getElementById('automationStatusLabel');
+        label.textContent = status;
+        if (/tous les jours|toutes les|activée|active|programmée/i.test(status)) {
+          label.style.color = "#27ae60";
+        } else {
+          label.style.color = "#888";
+        }
+      }).getAutomationStatus();
+    }
+  </script>
+</body>
+</html>
