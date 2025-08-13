@@ -17,6 +17,18 @@ if (!fs.existsSync(REPORTS_DIR)) {
   fs.mkdirSync(REPORTS_DIR, { recursive: true });
 }
 
+// Ensure a writable sessions directory exists (prefer /tmp on Render)
+const SESSIONS_DIR = process.env.SESSIONS_DIR
+  ? path.resolve(process.env.SESSIONS_DIR)
+  : path.join('/tmp', 'sessions');
+try {
+  if (!fs.existsSync(SESSIONS_DIR)) {
+    fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+  }
+} catch (e) {
+  console.warn('⚠️ Unable to create sessions directory:', SESSIONS_DIR, e.message);
+}
+
 // Fonction utilitaire pour générer un token unique et signer un lien :
 function generateToken(email) {
   const raw = `${email}-${Date.now()}-${crypto.randomUUID()}`;
@@ -56,7 +68,7 @@ const FileStore = createFileStore(session);
 app.use(session({
   name: 'sid', // nom de cookie stable
   store: new FileStore({
-    path: path.resolve(__dirname, '.sessions'),
+    path: SESSIONS_DIR,
     retries: 1,
     fileExtension: '.json',
     ttl: 60 * 60 * 6 // 6h de TTL côté store
