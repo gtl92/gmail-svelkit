@@ -24,6 +24,9 @@ backend/automated-users.json
 backend/tokens/
 backend/*.token.json
 
+backend/googlelibs/
+
+
 # --- SvelteKit / Frontend builds ---
 frontend/.svelte-kit/
 frontend/build/
@@ -43,4 +46,3 @@ coverage/
 .DS_Store
 Thumbs.db
 
-backend/googlelibs/
