@@ -2244,8 +2244,23 @@ app.get('/logout', (req, res) => {
 
 
 
+// ===== Build/Deploy info (for Render visibility) =====
+const BUILD_INFO = {
+  branch: process.env.RENDER_GIT_BRANCH || process.env.GIT_BRANCH || null,
+  commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null
+};
+
+// Health/version endpoint to verify deployed code
+app.get('/_version', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, branch: BUILD_INFO.branch, commit: BUILD_INFO.commit, pid: process.pid, now: new Date().toISOString() });
+});
+
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log('API listening on', PORT)); // ne PAS fixer 'localhost' ici
+app.listen(PORT, () => {
+  console.log('✅ API listening on', PORT);
+  console.log('🧱 Build info:', BUILD_INFO);
+}); // ne PAS fixer 'localhost' ici
 
 process.on('uncaughtException', (err) => {
   console.error('❗ Uncaught Exception:', err);
@@ -2269,39 +2284,18 @@ async function sendMail({ to, subject, html }) {
 // Fonction pour générer le HTML de l'email contenant le lien de rapport
 function buildEmailHtml(reportUrl) {
   return `
-    <div style="font-family:sans-serif;padding:24px;">
-      <h2>Votre rapport Gmail est prêt !</h2>
-      <p>
-        <a href="${reportUrl}" style="display:inline-block;padding:12px 28px;background:#1a73e8;color:#fff;font-size:16px;border-radius:8px;text-decoration:none;font-weight:bold" target="_blank">
-          Voir le rapport dans le navigateur
+    <div style="font-family:Arial, Helvetica, sans-serif; padding:24px; line-height:1.45; color:#1f2937;">
+      <h2 style="margin:0 0 12px 0; color:#111827;">Votre rapport Gmail est prêt ✉️</h2>
+      <p style="margin:0 0 16px 0; color:#374151;">Cliquez sur le bouton ci‑dessous pour l’ouvrir dans votre navigateur.</p>
+      <p style="margin:16px 0;">
+        <a href="${reportUrl}" target="_blank" style="display:inline-block; padding:12px 20px; background:#1a73e8; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:700;">
+          📄 Voir le résumé dans le navigateur
         </a>
       </p>
-      <p style="font-size:13px;color:#888;">Ce lien expirera dans 15 minutes.</p>
+      <p style="margin:18px 0 0 0; font-size:12px; color:#6b7280;">
+        Si le bouton ne fonctionne pas, copiez/collez ce lien dans votre navigateur :<br>
+        <span style="word-break:break-all; color:#1d4ed8;">${reportUrl}</span>
+      </p>
     </div>
-  `;
-}
-
-// Fonction pour encapsuler le rapport dans une page HTML complète
-function wrapReportHtml(html) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>Résumé Gmail</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>
-          body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f8f8f8;
-          }
-        </style>
-      </head>
-      <body>
-        ${html}
-      </body>
-    </html>
   `;
 }
