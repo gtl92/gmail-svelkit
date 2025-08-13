@@ -2245,9 +2245,7 @@ app.get('/logout', (req, res) => {
 
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`✅ Server listening on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log('API listening on', PORT)); // ne PAS fixer 'localhost' ici
 
 process.on('uncaughtException', (err) => {
   console.error('❗ Uncaught Exception:', err);
