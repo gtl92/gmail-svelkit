@@ -1553,21 +1553,45 @@ app.get('/last-report-raw', (req, res) => {
   res.send(userReport.html);
 });
 
-app.get('/count-emails', async (req, res) => {
-  if (!req.session.tokens) return res.status(401).json({ error: 'Non authentifié' });
+// --- Unified handler: supports GET (query) and POST (JSON body)
+async function countEmailsHandler(req, res, next) {
   try {
-    const { date, onlyUnread } = req.query;
+    const email = req.session?.user?.email || req.session?.email || null;
+    if (!email) {
+      const err = new Error('Non authentifié');
+      err.status = 401; throw err;
+    }
+    if (!req.session?.tokens) {
+      const err = new Error('Non authentifié (tokens manquants)');
+      err.status = 401; throw err;
+    }
+
+    // Parameters from query (GET) or body (POST)
+    const src = req.method === 'POST' ? (req.body || {}) : (req.query || {});
+    const date = src.date || new Date().toISOString().slice(0, 10);
+    const onlyUnread = (typeof src.onlyUnread === 'string')
+      ? src.onlyUnread === 'true'
+      : !!src.onlyUnread;
+
     oauth2Client.setCredentials(req.session.tokens);
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-    let query = `after:${Math.floor(new Date(date).getTime() / 1000)}`;
-    if (onlyUnread === 'true') query += ' is:unread';
-    const messagesRes = await gmail.users.messages.list({ userId: 'me', q: query });
-    const count = messagesRes.data.resultSizeEstimate || 0;
-    res.json({ count });
+
+    // Build Gmail query: after:epoch (00:00 UTC of given date)
+    const epoch = Math.floor(new Date(date + 'T00:00:00Z').getTime() / 1000);
+    let q = `after:${epoch}`;
+    if (onlyUnread) q += ' is:unread';
+
+    const list = await gmail.users.messages.list({ userId: 'me', q, maxResults: 500 });
+    const count = Array.isArray(list.data.messages) ? list.data.messages.length : (list.data.resultSizeEstimate || 0) || 0;
+
+    res.json({ ok: true, count, date, onlyUnread });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
-});
+}
+
+app.get('/count-emails', countEmailsHandler);
+app.post('/count-emails', countEmailsHandler);
 
 app.post('/send-report', async (req, res) => {
   if (!req.session.tokens) return res.status(401).json({ error: 'Non authentifié' });
