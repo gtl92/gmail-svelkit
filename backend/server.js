@@ -45,7 +45,7 @@ app.use(cookieParser());
 
 const allowedOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-    : ['http://localhost:5173'];
+    : ['http://localhost:5173', 'https://gmail.jobiizy.com'];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -91,16 +91,36 @@ app.use((req, _res, next) => {
   next();
 });
 
+// --- Parsers: doivent être avant toutes les routes ---
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '2mb' }));
+
 // Debug rapide : inspecter la session côté serveur
-app.get('/whoami', (req, res) => {
-  res.json({
-    user: req.session?.user || null,
-    email: req.session?.email || null,
-    hasTokens: !!(req.session && req.session.tokens),
-    tokenSummary: req.session?.tokens
-      ? { keys: Object.keys(req.session.tokens), expiry_date: req.session.tokens.expiry_date }
-      : null
-  });
+app.get('/whoami', async (req, res) => {
+  try {
+    if (!req.session?.user && req.session?.tokens) {
+      try {
+        oauth2Client.setCredentials(req.session.tokens);
+        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+        const profile = await gmail.users.getProfile({ userId: 'me' });
+        if (profile?.data?.emailAddress) {
+          req.session.user = { email: profile.data.emailAddress };
+          req.session.email = profile.data.emailAddress;
+          await new Promise((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
+        }
+      } catch (_) { /* ignore auto-bind failure */ }
+    }
+    res.json({
+      user: req.session?.user || null,
+      email: req.session?.email || null,
+      hasTokens: !!(req.session && req.session.tokens),
+      tokenSummary: req.session?.tokens
+        ? { keys: Object.keys(req.session.tokens), expiry_date: req.session.tokens.expiry_date }
+        : null
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 const userReports = new Map(); // Map<email, report>
@@ -707,7 +727,7 @@ app.get('/report-pdf', async (req, res) => {
   console.log("➡️ PDF Request → userReport HTML length:", userReport.html.length);
 
   try {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     console.log("➡️ Puppeteer lancé");
 
@@ -738,9 +758,6 @@ app.get('/report-pdf', async (req, res) => {
   }
 });
 
-// S'assurer que express.json() est utilisé AVANT les routes
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
 // (supprimé : configuration session doublon, voir plus haut)
 
@@ -753,27 +770,28 @@ const oauth2Client = new google.auth.OAuth2(
 // 1. Route pour récupérer l'URL d'authentification Google
 app.get('/auth-url', async (req, res) => {
   if (req.session.tokens) {
-    // Recrée l'OAuth2Client avec le token stocké
     oauth2Client.setCredentials(req.session.tokens);
-
-    // Lis l’email de l’utilisateur
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
     try {
       const profile = await gmail.users.getProfile({ userId: 'me' });
-      res.send({ email: profile.data.emailAddress });
+      const email = profile.data.emailAddress;
+      req.session.user = { email };
+      req.session.email = email;
+      await new Promise((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
+      res.send({ email });
       return;
     } catch (err) {
-      // Token invalide ou expiré → on efface
       req.session.tokens = null;
     }
   }
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',                // pour le forcer à être renvoyé même si déjà accepté
-    scope: ['https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.send',
-            'email',
-            'profile'
+    scope: [
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.send',
+      'email',
+      'profile'
     ]
   });
   res.send({ url });
@@ -794,7 +812,7 @@ app.get('/report-pdf/:token', async (req, res) => {
     }
     const html = fs.readFileSync(htmlPath, 'utf-8');
 
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -2218,7 +2236,7 @@ app.post('/report-pdf-server', async (req, res) => {
   try {
     const html = generatePdfHtml({ date, userEmail, emails, stats, onlyUnread });
 
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -2266,6 +2284,13 @@ const BUILD_INFO = {
 app.get('/_version', (req, res) => {
   res.set('Cache-Control', 'no-store');
   res.json({ ok: true, branch: BUILD_INFO.branch, commit: BUILD_INFO.commit, pid: process.pid, now: new Date().toISOString() });
+});
+
+// --- Global JSON error handler ---
+app.use((err, req, res, next) => {
+  console.error('❌ Unhandled error:', err && err.stack ? err.stack : err);
+  if (res.headersSent) return next(err);
+  res.status(err?.status || 500).json({ ok: false, error: err?.message || 'Internal Server Error' });
 });
 
 const PORT = process.env.PORT || 4000;
