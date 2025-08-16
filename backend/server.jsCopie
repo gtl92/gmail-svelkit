@@ -273,19 +273,19 @@ function renderSummaryHtml(stats, options = {}) {
         <!-- Bandeau stats façon GAS -->
         <div class="stats" style="display:flex;justify-content:space-around;margin:18px 0 22px 0;background:#ecf0f1;padding:18px 0;border-radius:8px;gap:18px;">
           <div class="stat-item" style="text-align:center;">
-            <div class="stat-number" style="font-size:1.6em;font-weight:700;">A ${Number(stats.total ?? 0)}</div>
+            <div class="stat-number" style="font-size:1.6em;font-weight:700;">${Number(stats.total ?? 0)}</div>
             <div class="stat-label" style="color:#666;">Total</div>
           </div>
           <div class="stat-item" style="text-align:center;">
-            <div class="stat-number" style="font-size:1.6em;font-weight:700;">A${Number(stats?.priority?.high ?? 0)}</div>
+            <div class="stat-number" style="font-size:1.6em;font-weight:700;">${Number(stats?.priority?.high ?? 0)}</div>
             <div class="stat-label" style="color:#666;">Haute Priorité</div>
           </div>
           <div class="stat-item" style="text-align:center;">
-            <div class="stat-number" style="font-size:1.6em;font-weight:700;">A ${Number(stats?.priority?.medium ?? 0)}</div>
+            <div class="stat-number" style="font-size:1.6em;font-weight:700;">${Number(stats?.priority?.medium ?? 0)}</div>
             <div class="stat-label" style="color:#666;">Priorité Moyenne</div>
           </div>
           <div class="stat-item" style="text-align:center;">
-            <div class="stat-number" style="font-size:1.6em;font-weight:700;">A${Number(stats?.priority?.action ?? 0)}</div>
+            <div class="stat-number" style="font-size:1.6em;font-weight:700;">${Number(stats?.priority?.action ?? 0)}</div>
             <div class="stat-label" style="color:#666;">Actions Requises</div>
           </div>
         </div>
@@ -723,24 +723,26 @@ function generateReportHtml({
              Résumé du rapport
            </div>
 
-<div class="stats" style="margin: 18px 0 22px 0; background: #ecf0f1; padding: 18px 0; border-radius: 8px; text-align: center;">
-    <div class="stat-item" style="display: inline-block; text-align: center; width: 23%; margin: 0 1%; vertical-align: top;">
-        <div class="stat-number" style="font-size: 1.6em; font-weight: 700;">B${total}</div>
-        <div class="stat-label" style="color: #666;">Total</div>
-    </div>
-    <div class="stat-item" style="display: inline-block; text-align: center; width: 23%; margin: 0 1%; vertical-align: top;">
-        <div class="stat-number" style="font-size: 1.6em; font-weight: 700;">B${pHigh}</div>
-        <div class="stat-label" style="color: #666;">Haute Priorité</div>
-    </div>
-    <div class="stat-item" style="display: inline-block; text-align: center; width: 23%; margin: 0 1%; vertical-align: top;">
-        <div class="stat-number" style="font-size: 1.6em; font-weight: 700;">B${pMedium}</div>
-        <div class="stat-label" style="color: #666;">Priorité Moyenne</div>
-    </div>
-    <div class="stat-item" style="display: inline-block; text-align: center; width: 23%; margin: 0 1%; vertical-align: top;">
-        <div class="stat-number" style="font-size: 1.6em; font-weight: 700;">B${pAction}</div>
-        <div class="stat-label" style="color: #666;">Actions Requises</div>
-    </div>
-</div>
+        <!-- Bandeau stats façon GAS (UN SEUL) -->
+        <div class="stats"
+             style="display:flex; justify-content:space-around; margin:18px 0 22px 0; background:#ecf0f1; padding:18px 0; border-radius:8px; gap:18px;">
+          <div class="stat-item" style="text-align:center;">
+            <div class="stat-number" style="font-size:1.6em; font-weight:700;">${total}</div>
+            <div class="stat-label" style="color:#666;">Total</div>
+          </div>
+          <div class="stat-item" style="text-align:center;">
+            <div class="stat-number" style="font-size:1.6em; font-weight:700;">${pHigh}</div>
+            <div class="stat-label" style="color:#666;">Haute Priorité</div>
+          </div>
+          <div class="stat-item" style="text-align:center;">
+            <div class="stat-number" style="font-size:1.6em; font-weight:700;">${pMedium}</div>
+            <div class="stat-label" style="color:#666;">Priorité Moyenne</div>
+          </div>
+          <div class="stat-item" style="text-align:center;">
+            <div class="stat-number" style="font-size:1.6em; font-weight:700;">${pAction}</div>
+            <div class="stat-label" style="color:#666;">Actions Requises</div>
+          </div>
+        </div>
 
         <div style="font-size:1.13em; font-weight:600; margin-bottom:10px; color:#2c3e50;">
           Options actives :
